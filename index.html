@@ -523,7 +523,7 @@
             document.getElementById("budget-upgrade-trigger").addEventListener("click", () => modal.classList.remove("hidden"));
             document.getElementById("close-pro-modal").addEventListener("click", () => modal.classList.add("hidden"));
 
-            // Redirección directa a Stripe Checkout
+            // Redirección directa a tu enlace de pago de Stripe
             document.getElementById("payment-form").addEventListener("submit", (e) => {
                 e.preventDefault();
                 window.location.href = "https://buy.stripe.com/00w9ASdokg1GgobfDJ7kc02";
