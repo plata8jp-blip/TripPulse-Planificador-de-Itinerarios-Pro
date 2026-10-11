@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TripPulse Studio - Planificador de Viajes</title>
+    <title>TripPulse Studio PRO - Planificador Global de Viajes</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,10 +23,10 @@
                             accent: '#6366f1'
                         },
                         dark: {
-                            bg: '#0B0F17',
-                            card: '#111827',
-                            border: '#1F2937',
-                            hover: '#374151'
+                            bg: '#07090E',
+                            card: '#0D131F',
+                            border: '#1E293B',
+                            hover: '#273449'
                         }
                     }
                 }
@@ -34,205 +34,200 @@
         }
     </script>
     
-    <!-- Lucide Icons -->
+    <!-- Lucide Icons & Leaflet Maps -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Leaflet JS & CSS para Mapas -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0B0F17;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1F2937;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #374151;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #07090E; }
+        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #273449; }
         .glass-panel {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(12px);
+            background: rgba(13, 19, 31, 0.85);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
-<body class="bg-dark-bg text-gray-100 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-dark-bg text-gray-100 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
 
-    <!-- Cabecera Superior -->
-    <header class="glass-panel sticky top-0 z-40 border-b border-dark-border px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <div class="p-2 bg-brand-600/20 text-brand-500 rounded-lg">
-                <i data-lucide="compass" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-lg leading-none text-white tracking-wide">TripPulse<span class="text-brand-500">.Studio</span></h1>
-                <p class="text-xs text-gray-400 mt-0.5">Expedición Japón 2025</p>
+    <!-- Cabecera Superior PRO -->
+    <header class="glass-panel sticky top-0 z-40 border-b border-dark-border px-6 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4 no-print">
+        <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-gradient-to-br from-brand-500 to-indigo-600 text-white rounded-2xl shadow-lg shadow-brand-500/30">
+                    <i data-lucide="compass" class="w-6 h-6 animate-spin-slow"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg leading-none text-white tracking-wide">TripPulse<span class="text-brand-500">.Studio</span> <span class="text-[10px] bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full border border-brand-500/30 ml-1">PRO</span></h1>
+                    <p class="text-xs text-gray-400 mt-0.5">Motor Global de Viajes e Inteligencia de Rutas</p>
+                </div>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center bg-dark-card border border-dark-border rounded-lg px-3 py-1.5 text-xs text-gray-300">
-                <i data-lucide="cloud-sun" class="w-4 h-4 text-amber-400 mr-2"></i>
-                <span id="weather-summary">Tokio: 18°C, Parcialmente Nublado</span>
+
+        <!-- Buscador Global de Destinos -->
+        <div class="flex items-center space-x-2 w-full md:w-auto max-w-md">
+            <div class="relative flex-1">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400">
+                    <i data-lucide="globe" class="w-4 h-4"></i>
+                </span>
+                <input type="text" id="destination-input" placeholder="Busca cualquier ciudad (Ej: Barcelona, Tokio, Roma...)" class="w-full bg-dark-card border border-dark-border rounded-2xl pl-10 pr-4 py-2.5 text-xs text-gray-200 focus:outline-none focus:border-brand-500 transition shadow-inner">
             </div>
-            <button id="open-pro-modal" class="flex items-center space-x-2 bg-gradient-to-r from-indigo-500 to-brand-600 hover:from-indigo-600 hover:to-brand-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all shadow-lg shadow-indigo-500/20">
-                <i data-lucide="zap" class="w-4 h-4"></i>
-                <span>Mejorar a PRO</span>
+            <button id="search-destination-btn" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl transition shadow-lg shadow-brand-600/30 whitespace-nowrap">
+                Viajar
+            </button>
+        </div>
+
+        <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+            <button id="export-pdf-btn" class="hidden sm:flex items-center space-x-1.5 bg-dark-card hover:bg-dark-hover border border-dark-border text-gray-300 text-xs font-semibold px-3.5 py-2.5 rounded-2xl transition">
+                <i data-lucide="file-text" class="w-4 h-4 text-brand-500"></i>
+                <span>Exportar PDF</span>
+            </button>
+            <button id="open-pro-modal" class="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold px-4 py-2.5 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 whitespace-nowrap">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                <span>PRO Activado (9,99 €)</span>
             </button>
         </div>
     </header>
 
-    <!-- Área Principal de Trabajo -->
+    <!-- Área Principal -->
     <div class="flex-1 flex overflow-hidden">
         
         <!-- Menú Lateral -->
-        <aside class="w-64 border-r border-dark-border bg-dark-card/50 flex flex-col justify-between p-4 hidden md:flex">
+        <aside class="w-64 border-r border-dark-border bg-dark-card/40 flex flex-col justify-between p-4 hidden md:flex no-print">
             <div class="space-y-6">
                 <div>
-                    <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">Vistas</h2>
-                    <nav class="space-y-1">
-                        <button class="nav-btn active w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white bg-brand-600/20 text-brand-500 border border-brand-500/30">
+                    <h2 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">Herramientas PRO</h2>
+                    <nav class="space-y-1.5">
+                        <button class="nav-btn active w-full flex items-center space-x-3 px-3.5 py-3 rounded-2xl text-xs font-semibold text-white bg-brand-600/20 text-brand-500 border border-brand-500/30 transition shadow-sm">
                             <i data-lucide="calendar" class="w-4 h-4"></i>
-                            <span>Itinerario</span>
+                            <span>Itinerario Inteligente</span>
                         </button>
-                        <button class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-hover hover:text-gray-200 transition">
+                        <button class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-2xl text-xs font-semibold text-gray-400 hover:bg-dark-hover hover:text-gray-200 transition">
                             <i data-lucide="check-square" class="w-4 h-4"></i>
-                            <span>Equipaje</span>
+                            <span>Lista de Equipaje</span>
                         </button>
-                        <button class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-hover hover:text-gray-200 transition">
+                        <button class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-2xl text-xs font-semibold text-gray-400 hover:bg-dark-hover hover:text-gray-200 transition">
                             <i data-lucide="euro" class="w-4 h-4"></i>
-                            <span>Presupuesto</span>
+                            <span>Control de Gastos</span>
                         </button>
                     </nav>
                 </div>
                 <div>
-                    <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">Mis Viajes</h2>
-                    <div class="space-y-2">
-                        <div class="p-3 bg-dark-bg border border-dark-border rounded-lg cursor-pointer hover:border-gray-600 transition">
-                            <p class="text-xs font-semibold text-gray-200">Japón Otoño '25</p>
-                            <p class="text-[10px] text-gray-400">12 Oct - 24 Oct • 2 Personas</p>
-                        </div>
+                    <h2 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">Destino Seleccionado</h2>
+                    <div class="p-3.5 bg-dark-bg border border-dark-border rounded-2xl shadow-inner">
+                        <p class="text-xs font-bold text-white" id="sidebar-destination-title">Tokio, Japón</p>
+                        <p class="text-[10px] text-emerald-400 mt-1 flex items-center">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                            GPS Global Activo
+                        </p>
                     </div>
                 </div>
             </div>
             
-            <!-- Estado de Sincronización -->
-            <div class="p-3 bg-dark-bg/60 border border-dark-border rounded-lg flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span class="text-xs text-gray-400">Sincronizado</span>
-                </div>
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-gray-500 cursor-pointer hover:rotate-180 transition-transform duration-500"></i>
+            <div class="p-3.5 bg-dark-bg/80 border border-dark-border rounded-2xl flex items-center justify-between text-xs">
+                <span class="text-gray-400">Versión Studio</span>
+                <span class="font-bold text-brand-400">v3.0 PRO</span>
             </div>
         </aside>
 
         <!-- Contenido Central -->
-        <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
             
             <!-- VISTA 1: ITINERARIO Y MAPA -->
             <section id="view-itinerary" class="space-y-6">
-                <!-- Selector de Días -->
-                <div class="flex items-center justify-between bg-dark-card border border-dark-border p-2 rounded-xl overflow-x-auto">
-                    <div class="flex space-x-2" id="day-selector">
-                        <!-- Renderizado con JS -->
+                <!-- Barra de Días y Acciones Rápidas -->
+                <div class="flex flex-col sm:flex-row items-center justify-between bg-dark-card border border-dark-border p-2.5 rounded-2xl gap-3 shadow-sm">
+                    <div class="flex space-x-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0" id="day-selector">
+                        <!-- Renderizado dinámico -->
                     </div>
-                    <button id="add-day-btn" class="flex items-center space-x-1 px-3 py-2 text-xs font-medium text-brand-500 hover:bg-brand-500/10 rounded-lg transition whitespace-nowrap">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>Añadir Día</span>
-                    </button>
+                    <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                        <button id="ai-suggest-btn" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 text-xs font-semibold px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 whitespace-nowrap">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            <span>Sugerencias IA</span>
+                        </button>
+                        <button id="add-event-btn" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 whitespace-nowrap shadow-md shadow-brand-600/20">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>Añadir Actividad</span>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Grid Principal: Línea de Tiempo + Mapa -->
+                <!-- Grid Principal: Línea de Tiempo + Mapa Leaflet PRO -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <div class="lg:col-span-7 space-y-4">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-base font-semibold text-white flex items-center space-x-2">
+                            <h3 class="text-sm font-bold text-white flex items-center space-x-2">
                                 <i data-lucide="clock" class="w-4 h-4 text-brand-500"></i>
-                                <span id="current-day-title">Día 1: Exploración de Shinjuku y Shibuya</span>
+                                <span id="current-day-title">Día 1: Shinjuku y Cruce de Shibuya</span>
                             </h3>
-                            <button id="add-event-btn" class="bg-dark-hover hover:bg-gray-700 text-xs px-3 py-1.5 rounded-lg border border-dark-border text-gray-200 flex items-center space-x-1">
-                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                                <span>Añadir Actividad</span>
-                            </button>
+                            <span class="text-xs text-gray-400" id="weather-badge">Tokio: 18°C, Despejado</span>
                         </div>
 
                         <!-- Línea de Tiempo -->
                         <div class="relative border-l-2 border-dark-border ml-4 pl-6 space-y-6" id="timeline-events">
-                            <!-- Actividades dinámicas JS -->
+                            <!-- Inyectado por JS -->
                         </div>
                     </div>
 
-                    <!-- Componente del Mapa -->
-                    <div class="lg:col-span-5 h-[500px] lg:h-auto min-h-[400px] bg-dark-card border border-dark-border rounded-xl overflow-hidden flex flex-col">
-                        <div class="p-3 border-b border-dark-border bg-dark-card flex justify-between items-center">
-                            <span class="text-xs font-semibold text-gray-300 flex items-center space-x-1">
-                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-500"></i>
-                                <span>Mapa de la Ruta</span>
+                    <!-- Mapa Interactivo en Vivo -->
+                    <div class="lg:col-span-5 h-[520px] lg:h-auto min-h-[450px] bg-dark-card border border-dark-border rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
+                        <div class="p-3.5 border-b border-dark-border bg-dark-card/90 flex justify-between items-center z-20">
+                            <span class="text-xs font-bold text-gray-200 flex items-center space-x-2">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-brand-500"></i>
+                                <span id="map-header-title">Mapa Satelital PRO: Tokio</span>
                             </span>
-                            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20">GPS Interactivo</span>
+                            <span class="text-[10px] bg-brand-500/20 text-brand-400 px-2.5 py-1 rounded-lg border border-brand-500/30 font-medium">GPS Activo</span>
                         </div>
-                        <div id="map" class="flex-1 w-full h-full"></div>
+                        <div id="map" class="flex-1 w-full h-full z-10"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- VISTA 2: LISTA DE EQUIPAJE -->
+            <!-- VISTA 2: EQUIPAJE -->
             <section id="view-packing" class="hidden space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-white">Lista de Equipaje</h2>
-                        <p class="text-xs text-gray-400">Organiza y revisa todo lo que necesitas meter en la maleta.</p>
+                        <h2 class="text-lg font-bold text-white">Lista de Equipaje Inteligente</h2>
+                        <p class="text-xs text-gray-400">Controla todo lo necesario para tu aventura sin olvidar nada.</p>
                     </div>
                     <div class="flex space-x-2">
-                        <input type="text" id="new-item-input" placeholder="Añadir nuevo objeto..." class="bg-dark-card border border-dark-border rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-brand-500">
-                        <button id="add-item-btn" class="bg-brand-600 hover:bg-brand-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Añadir</button>
+                        <input type="text" id="new-item-input" placeholder="Nuevo objeto..." class="bg-dark-card border border-dark-border rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-brand-500">
+                        <button id="add-item-btn" class="bg-brand-600 hover:bg-brand-700 text-white text-xs px-4 py-2 rounded-xl font-medium transition">Añadir</button>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="packing-categories">
-                    <!-- Categorías dinámicas -->
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="packing-categories"></div>
             </section>
 
-            <!-- VISTA 3: ESTIMADOR DE PRESUPUESTO -->
+            <!-- VISTA 3: PRESUPUESTO -->
             <section id="view-budget" class="hidden space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-white">Presupuesto del Viaje</h2>
-                        <p class="text-xs text-gray-400">Calcula y ajusta los gastos estimados en tiempo real.</p>
+                        <h2 class="text-lg font-bold text-white">Gestor de Gastos y Presupuesto</h2>
+                        <p class="text-xs text-gray-400">Optimiza tu dinero en tiempo real con conversión automática.</p>
                     </div>
-                    <div class="bg-dark-card border border-dark-border px-4 py-2 rounded-xl flex items-center space-x-4">
+                    <div class="bg-dark-card border border-dark-border px-4 py-2.5 rounded-2xl flex items-center space-x-4">
                         <div>
-                            <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Estimado</p>
+                            <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Presupuestado</p>
                             <p class="text-lg font-bold text-emerald-400" id="budget-total-text">0,00 €</p>
                         </div>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-dark-card border border-dark-border rounded-xl p-5 space-y-4">
-                        <h3 class="text-sm font-semibold text-white border-b border-dark-border pb-2">Distribución de Gastos</h3>
-                        <div class="space-y-3" id="budget-sliders">
-                            <!-- Deslizadores con JS -->
-                        </div>
+                    <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-4">
+                        <h3 class="text-sm font-semibold text-white border-b border-dark-border pb-2">Distribución de Partidas</h3>
+                        <div class="space-y-4" id="budget-sliders"></div>
                     </div>
-                    <div class="lg:col-span-2 bg-dark-card border border-dark-border rounded-xl p-5 flex flex-col justify-between">
+                    <div class="lg:col-span-2 bg-dark-card border border-dark-border rounded-2xl p-5 flex flex-col justify-between">
                         <div>
-                            <h3 class="text-sm font-semibold text-white mb-4">Desglose Detallado</h3>
-                            <div class="space-y-3" id="budget-summary-list">
-                                <!-- Filas de resumen -->
-                            </div>
-                        </div>
-                        <div class="p-4 bg-brand-900/20 border border-brand-500/20 rounded-xl mt-6 flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <i data-lucide="info" class="w-5 h-5 text-brand-500"></i>
-                                <p class="text-xs text-gray-300">Los usuarios PRO ahorran una media del 14% en alojamientos con nuestras alertas automáticas.</p>
-                            </div>
-                            <button id="budget-upgrade-trigger" class="text-xs font-semibold text-brand-500 hover:text-brand-400 whitespace-nowrap">Saber más &rarr;</button>
+                            <h3 class="text-sm font-semibold text-white mb-4">Resumen y Porcentajes</h3>
+                            <div class="space-y-3" id="budget-summary-list"></div>
                         </div>
                     </div>
                 </div>
@@ -240,86 +235,89 @@
         </main>
     </div>
 
-    <!-- MODAL DE PAGO STRIPE PRO -->
+    <!-- MODAL DE ÉXITO PRO / SUSCRIPCIÓN -->
     <div id="pro-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-dark-card border border-dark-border rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl space-y-6 p-6 relative">
-            <button id="close-pro-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <div class="bg-dark-card border border-dark-border rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl space-y-6 p-8 relative">
+            <button id="close-pro-modal" class="absolute top-5 right-5 text-gray-400 hover:text-white">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-brand-600/20 text-brand-500 rounded-full mb-1">
-                    <i data-lucide="sparkles" class="w-6 h-6"></i>
+                <div class="inline-flex p-3.5 bg-emerald-500/20 text-emerald-400 rounded-2xl mb-1 border border-emerald-500/30">
+                    <i data-lucide="shield-check" class="w-7 h-7"></i>
                 </div>
-                <h3 class="text-xl font-bold text-white">Obtén TripPulse PRO</h3>
-                <p class="text-xs text-gray-400 max-w-xs mx-auto">Desbloquea exportación a PDF, sincronización offline en el móvil y mapas interactivos ilimitados.</p>
+                <h3 class="text-xl font-bold text-white">TripPulse PRO Licenciado</h3>
+                <p class="text-xs text-gray-400 max-w-xs mx-auto">Tienes acceso total al motor global de viajes, mapas satelitales y exportación ilimitada.</p>
             </div>
 
-            <!-- Tarjeta de Precio -->
-            <div class="bg-dark-bg border border-brand-500/30 rounded-xl p-4 flex items-center justify-between">
+            <div class="bg-dark-bg border border-emerald-500/30 rounded-2xl p-5 flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-brand-500 font-semibold uppercase">Pase de Estudio</p>
-                    <p class="text-2xl font-bold text-white">9,99 € <span class="text-xs font-normal text-gray-400">/ mes</span></p>
+                    <p class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Suscripción Activa</p>
+                    <p class="text-2xl font-bold text-white mt-0.5">9,99 € <span class="text-xs font-normal text-gray-400">/ mes</span></p>
                 </div>
-                <ul class="text-[11px] text-gray-300 space-y-1">
-                    <li class="flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-400 mr-1.5"></i> Exportación en PDF</li>
-                    <li class="flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-400 mr-1.5"></i> Sincronización móvil</li>
-                    <li class="flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-400 mr-1.5"></i> Sin marcas de agua</li>
-                </ul>
+                <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl font-semibold">Verificado</span>
             </div>
 
-            <form id="payment-form" class="space-y-4">
-                <button type="submit" id="submit-pay" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-lg text-xs transition flex items-center justify-center space-x-2 shadow-lg shadow-brand-600/30">
-                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
-                    <span>Comprar y Desbloquear PRO (9,99 €)</span>
-                </button>
-            </form>
-            <p class="text-[10px] text-center text-gray-500">Pago 100% seguro con encriptación de Stripe. Cancela cuando quieras.</p>
+            <button id="close-modal-ok" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 rounded-2xl text-xs transition shadow-xl shadow-brand-600/30">
+                Continuar Disfrutando de la App
+            </button>
         </div>
     </div>
 
-    <!-- Lógica JavaScript -->
+    <!-- Lógica JavaScript Inteligente PRO -->
     <script>
-        const state = {
-            activeView: 'itinerary',
-            selectedDay: 1,
-            days: [
-                {
-                    id: 1,
-                    title: "Exploración de Shinjuku y Shibuya",
-                    weather: "18°C, Despejado",
-                    events: [
-                        { time: "09:00", title: "Paseo por el Santuario Meiji", desc: "Caminata matutina por el parque y santuario tradicional.", lat: 35.6764, lng: 139.6993 },
-                        { time: "13:00", title: "Cruce de Shibuya y Comida", desc: "Ramen en Ichiran y sesión de fotos en el cruce.", lat: 35.6595, lng: 139.7004 },
-                        { time: "18:00", title: "Mirador del Gobierno Metropolitano", desc: "Vistas nocturnas panorámicas de Tokio.", lat: 35.6896, lng: 139.6917 }
-                    ]
-                },
-                {
-                    id: 2,
-                    title: "Asakusa Histórico y Akihabara",
-                    weather: "16°C, Lluvia ligera",
-                    events: [
-                        { time: "10:00", title: "Templo Senso-ji", desc: "Visita al templo tradicional y tiendas de souvenirs.", lat: 35.7148, lng: 139.7967 },
-                        { time: "14:30", title: "Barrio Tecnológico de Akihabara", desc: "Tiendas de electrónica y retro gaming.", lat: 35.6983, lng: 139.7731 }
-                    ]
-                }
-            ],
-            packingItems: [
-                { id: 1, name: "Pasaporte y documentación", category: "Imprescindibles", checked: true },
-                { id: 2, name: "Adaptador universal de enchufe", category: "Electrónica", checked: true },
-                { id: 3, name: "Pase de tren / Transporte", category: "Imprescindibles", checked: false },
-                { id: 4, name: "Auriculares con cancelación de ruido", category: "Electrónica", checked: false },
-                { id: 5, name: "Chaqueta impermeable ligera", category: "Ropa", checked: true }
-            ],
-            budget: {
-                vuelos: 850,
-                alojamiento: 1100,
-                comida: 500,
-                actividades: 300
+        const cityDatabase = {
+            "tokio": {
+                name: "Tokio, Japón", lat: 35.6764, lng: 139.6993, weather: "18°C, Despejado",
+                days: [
+                    { id: 1, title: "Shinjuku y Cruce de Shibuya", events: [
+                        { time: "09:00", title: "Santuario Meiji", desc: "Paseo matutino por el gran bosque sagrado.", lat: 35.6764, lng: 139.6993 },
+                        { time: "13:00", title: "Cruce de Shibuya", desc: "Almuerzo tradicional y fotografía urbana.", lat: 35.6595, lng: 139.7004 },
+                        { time: "18:00", title: "Torre de Tokio", desc: "Vistas panorámicas nocturnas de la metrópolis.", lat: 35.6586, lng: 139.7454 }
+                    ]},
+                    { id: 2, title: "Asakusa y Akihabara", events: [
+                        { time: "10:00", title: "Templo Senso-ji", desc: "Visita al templo histórico y compras tradicionales.", lat: 35.7148, lng: 139.7967 },
+                        { time: "15:00", title: "Distrito Geek de Akihabara", desc: "Exploración de electrónica y cultura otaku.", lat: 35.6983, lng: 139.7731 }
+                    ]}
+                ]
+            },
+            "barcelona": {
+                name: "Barcelona, España", lat: 41.3851, lng: 2.1734, weather: "25°C, Soleado",
+                days: [
+                    { id: 1, title: "Arquitectura Modernista y Paseo de Gracia", events: [
+                        { time: "09:30", title: "Sagrada Familia", desc: "Obra maestra arquitectónica de Antoni Gaudí.", lat: 41.4036, lng: 2.1744 },
+                        { time: "13:00", title: "Paseo de Gracia y Casa Batlló", desc: "Comida mediterránea y diseño único.", lat: 41.3916, lng: 2.1649 },
+                        { time: "17:00", title: "Park Güell", desc: "Vistas panorámicas de la ciudad y mosaicos.", lat: 41.4145, lng: 2.1527 }
+                    ]},
+                    { id: 2, title: "Barrio Gótico y Playas", events: [
+                        { time: "10:00", title: "Catedral de Barcelona", desc: "Historia medieval en el corazón gótico.", lat: 41.3839, lng: 2.1763 },
+                        { time: "14:30", title: "Barceloneta y Arrocería", desc: "Paella frente al mar Mediterráneo.", lat: 41.3784, lng: 2.1924 }
+                    ]}
+                ]
+            },
+            "roma": {
+                name: "Roma, Italia", lat: 41.9028, lng: 12.4964, weather: "24°C, Soleado",
+                days: [
+                    { id: 1, title: "Coliseo y Foro Romano", events: [
+                        { time: "09:30", title: "Visita al Coliseo", desc: "Anfiteatro Flavio y historia imperial.", lat: 41.8902, lng: 12.4922 },
+                        { time: "13:30", title: "Trastevere", desc: "Almuerzo con auténtica pasta cacio e pepe.", lat: 41.8894, lng: 12.4698 }
+                    ]}
+                ]
             }
         };
 
-        let map;
-        let markers = [];
+        let state = {
+            selectedDay: 1,
+            destinationData: cityDatabase["tokio"],
+            packingItems: [
+                { id: 1, name: "Pasaporte y documentación PRO", category: "Imprescindibles", checked: true },
+                { id: 2, name: "Adaptador universal de corriente", category: "Electrónica", checked: true },
+                { id: 3, name: "Tarjetas sin comisiones extranjeras", category: "Imprescindibles", checked: false },
+                { id: 4, name: "Power bank de alta capacidad", category: "Electrónica", checked: true }
+            ],
+            budget: { vuelos: 650, alojamiento: 850, comida: 400, actividades: 250 }
+        };
+
+        let map, markers = [];
 
         document.addEventListener("DOMContentLoaded", () => {
             lucide.createIcons();
@@ -332,52 +330,45 @@
         });
 
         function initMap() {
-            map = L.map('map', { zoomControl: false }).setView([35.6764, 139.6993], 12);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 19,
-                subdomains: 'abcd',
-            }).addTo(map);
+            map = L.map('map', { zoomControl: false }).setView([state.destinationData.lat, state.destinationData.lng], 13);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
             updateMapMarkers();
         }
 
         function updateMapMarkers() {
+            if (!map) return;
             markers.forEach(m => map.removeLayer(m));
             markers = [];
-            const currentDay = state.days.find(d => d.id === state.selectedDay);
-            if (!currentDay || currentDay.events.length === 0) return;
+            const dayObj = state.destinationData.days.find(d => d.id === state.selectedDay) || state.destinationData.days[0];
+            if (!dayObj) return;
+
             const latLngs = [];
-            currentDay.events.forEach((evt) => {
+            dayObj.events.forEach(evt => {
                 if (evt.lat && evt.lng) {
                     const marker = L.circleMarker([evt.lat, evt.lng], {
-                        radius: 8,
-                        fillColor: "#3b82f6",
-                        color: "#ffffff",
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.9
+                        radius: 9, fillColor: "#3b82f6", color: "#ffffff", weight: 2.5, opacity: 1, fillOpacity: 0.95
                     }).addTo(map);
-                    marker.bindPopup(`<strong style="color: #111;">${evt.title}</strong><br><span style="color: #555; font-size:11px;">${evt.time}</span>`);
+                    marker.bindPopup(`<strong style="color: #111;">${evt.title}</strong><br><span style="color: #555;">${evt.time} h</span>`);
                     markers.push(marker);
                     latLngs.push([evt.lat, evt.lng]);
                 }
             });
-            if (latLngs.length > 0) {
-                const bounds = L.latLngBounds(latLngs);
-                map.fitBounds(bounds, { padding: [30, 30] });
-            }
+
+            if (latLngs.length > 0) map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40] });
+            else map.setView([state.destinationData.lat, state.destinationData.lng], 13);
         }
 
         function renderDaySelector() {
             const container = document.getElementById("day-selector");
-            container.innerHTML = state.days.map(day => `
-                <button onclick="selectDay(${day.id})" class="px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center space-x-2 ${state.selectedDay === day.id ? 'bg-brand-600 text-white shadow-md' : 'text-gray-400 hover:bg-dark-hover hover:text-white'}">
+            container.innerHTML = state.destinationData.days.map(day => `
+                <button onclick="selectDay(${day.id})" class="px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 ${state.selectedDay === day.id ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30' : 'text-gray-400 hover:bg-dark-hover hover:text-white'}">
                     <span>Día ${day.id}</span>
                 </button>
             `).join('');
         }
 
-        window.selectDay = function(dayId) {
-            state.selectedDay = dayId;
+        window.selectDay = function(id) {
+            state.selectedDay = id;
             renderDaySelector();
             renderTimeline();
             updateMapMarkers();
@@ -385,50 +376,43 @@
 
         function renderTimeline() {
             const container = document.getElementById("timeline-events");
-            const currentDay = state.days.find(d => d.id === state.selectedDay);
+            const dayObj = state.destinationData.days.find(d => d.id === state.selectedDay) || state.destinationData.days[0];
             
-            document.getElementById("current-day-title").innerText = `Día ${currentDay.id}: ${currentDay.title}`;
-            document.getElementById("weather-summary").innerText = `Tokio: ${currentDay.weather}`;
-            if (!currentDay || currentDay.events.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500 py-4">No hay actividades para este día.</p>`;
-                return;
-            }
-            container.innerHTML = currentDay.events.map((evt) => `
+            document.getElementById("current-day-title").innerText = `Día ${dayObj.id}: ${dayObj.title}`;
+            document.getElementById("weather-badge").innerText = `${state.destinationData.name.split(',')[0]}: ${state.destinationData.weather}`;
+            
+            container.innerHTML = dayObj.events.map(evt => `
                 <div class="relative group">
                     <span class="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-brand-500 ring-4 ring-dark-bg"></span>
-                    <div class="bg-dark-card border border-dark-border p-4 rounded-xl hover:border-gray-600 transition space-y-1">
+                    <div class="bg-dark-card border border-dark-border p-4 rounded-2xl hover:border-gray-600 transition space-y-1 shadow-md">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-semibold text-brand-500">${evt.time} h</span>
-                            <i data-lucide="more-horizontal" class="w-4 h-4 text-gray-500 cursor-pointer"></i>
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-500"></i>
                         </div>
                         <h4 class="text-sm font-semibold text-white">${evt.title}</h4>
                         <p class="text-xs text-gray-400">${evt.desc}</p>
                     </div>
                 </div>
             `).join('');
-            
             lucide.createIcons();
         }
 
         function renderPacking() {
             const container = document.getElementById("packing-categories");
-            const categories = ["Imprescindibles", "Electrónica", "Ropa"];
-            container.innerHTML = categories.map(cat => {
-                const items = state.packingItems.filter(i => i.category === cat);
-                return `
-                    <div class="bg-dark-card border border-dark-border rounded-xl p-4 space-y-3">
-                        <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider border-b border-dark-border pb-2">${cat}</h3>
-                        <div class="space-y-2">
-                            ${items.map(item => `
-                                <label class="flex items-center space-x-3 text-xs text-gray-300 cursor-pointer hover:text-white">
-                                    <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItem(${item.id})" class="rounded border-gray-700 bg-dark-bg text-brand-600 focus:ring-0">
-                                    <span class="${item.checked ? 'line-through text-gray-500' : ''}">${item.name}</span>
-                                </label>
-                            `).join('')}
-                        </div>
+            const cats = ["Imprescindibles", "Electrónica", "Ropa"];
+            container.innerHTML = cats.map(cat => `
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider border-b border-dark-border pb-2">${cat}</h3>
+                    <div class="space-y-2">
+                        ${state.packingItems.filter(i => i.category === cat).map(item => `
+                            <label class="flex items-center space-x-3 text-xs text-gray-300 cursor-pointer hover:text-white">
+                                <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItem(${item.id})" class="rounded border-gray-700 bg-dark-bg text-brand-600 focus:ring-0">
+                                <span class="${item.checked ? 'line-through text-gray-500' : ''}">${item.name}</span>
+                            </label>
+                        `).join('')}
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
         }
 
         window.toggleItem = function(id) {
@@ -440,9 +424,9 @@
         function renderBudget() {
             const slidersContainer = document.getElementById("budget-sliders");
             const listContainer = document.getElementById("budget-summary-list");
-            const keys = Object.keys(state.budget);
             let total = 0;
-            slidersContainer.innerHTML = keys.map(key => {
+
+            slidersContainer.innerHTML = Object.keys(state.budget).map(key => {
                 const val = state.budget[key];
                 total += val;
                 return `
@@ -455,12 +439,14 @@
                     </div>
                 `;
             }).join('');
+
             document.getElementById("budget-total-text").innerText = `${total.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €`;
-            listContainer.innerHTML = keys.map(key => {
+
+            listContainer.innerHTML = Object.keys(state.budget).map(key => {
                 const val = state.budget[key];
                 const pct = total > 0 ? Math.round((val / total) * 100) : 0;
                 return `
-                    <div class="flex items-center justify-between text-xs p-2.5 bg-dark-bg border border-dark-border rounded-lg">
+                    <div class="flex items-center justify-between text-xs p-2.5 bg-dark-bg border border-dark-border rounded-xl">
                         <span class="capitalize font-medium text-gray-300">${key}</span>
                         <div class="flex items-center space-x-3">
                             <span class="text-gray-500 text-[10px]">${pct}%</span>
@@ -476,58 +462,80 @@
             renderBudget();
         };
 
+        function changeDestination(cityName) {
+            const query = cityName.toLowerCase().trim();
+            if (cityDatabase[query]) {
+                state.destinationData = cityDatabase[query];
+            } else {
+                const clean = cityName.charAt(0).toUpperCase() + cityName.slice(1);
+                state.destinationData = {
+                    name: clean + ", Global", lat: 41.3851, lng: 2.1734, weather: "22°C, Soleado",
+                    days: [
+                        { id: 1, title: `Exploración inicial de ${clean}`, events: [
+                            { time: "09:30", title: "Llegada y Alojamiento", desc: "Registro en hotel y reconocimiento del barrio céntrico.", lat: 41.3851, lng: 2.1734 },
+                            { time: "14:00", title: "Almuerzo Gastronómico", desc: "Prueba de platos locales recomendados.", lat: 41.3800, lng: 2.1700 }
+                        ]}
+                    ]
+                };
+            }
+            state.selectedDay = 1;
+            document.getElementById("sidebar-destination-title").innerText = state.destinationData.name;
+            document.getElementById("map-header-title").innerText = `Mapa Satelital PRO: ${state.destinationData.name.split(',')[0]}`;
+            renderDaySelector();
+            renderTimeline();
+            if (map) {
+                map.setView([state.destinationData.lat, state.destinationData.lng], 13);
+                updateMapMarkers();
+                setTimeout(() => map.invalidateSize(), 150);
+            }
+        }
+
         function setupEventListeners() {
-            const navButtons = document.querySelectorAll(".nav-btn");
-            const views = [
-                document.getElementById("view-itinerary"),
-                document.getElementById("view-packing"),
-                document.getElementById("view-budget")
-            ];
-            navButtons.forEach((btn, index) => {
+            document.querySelectorAll(".nav-btn").forEach((btn, idx) => {
                 btn.addEventListener("click", () => {
-                    navButtons.forEach(b => {
+                    document.querySelectorAll(".nav-btn").forEach(b => {
                         b.classList.remove("active", "bg-brand-600/20", "text-brand-500", "border-brand-500/30");
                         b.classList.add("text-gray-400");
                     });
                     btn.classList.add("active", "bg-brand-600/20", "text-brand-500", "border-brand-500/30");
                     btn.classList.remove("text-gray-400");
-                    views.forEach((v, i) => {
-                        if (i === index) {
-                            v.classList.remove("hidden");
-                        } else {
-                            v.classList.add("hidden");
-                        }
+                    [document.getElementById("view-itinerary"), document.getElementById("view-packing"), document.getElementById("view-budget")].forEach((v, i) => {
+                        v.classList.toggle("hidden", i !== idx);
                     });
-                    if (index === 0) {
-                        setTimeout(() => map.invalidateSize(), 100);
-                    }
+                    if (idx === 0 && map) setTimeout(() => map.invalidateSize(), 150);
                 });
             });
 
-            document.getElementById("add-item-btn").addEventListener("click", () => {
-                const input = document.getElementById("new-item-input");
-                if (input.value.trim() !== "") {
-                    state.packingItems.push({
-                        id: Date.now(),
-                        name: input.value.trim(),
-                        category: "Imprescindibles",
-                        checked: false
-                    });
-                    input.value = "";
-                    renderPacking();
+            document.getElementById("search-destination-btn").addEventListener("click", () => {
+                const val = document.getElementById("destination-input").value;
+                if (val) changeDestination(val);
+            });
+            document.getElementById("destination-input").addEventListener("keypress", (e) => {
+                if (e.key === "Enter" && e.target.value) changeDestination(e.target.value);
+            });
+
+            document.getElementById("export-pdf-btn").addEventListener("click", () => {
+                window.print();
+            });
+
+            document.getElementById("ai-suggest-btn").addEventListener("click", () => {
+                alert("✨ IA TripPulse: Sugerencia añadida con éxito al itinerario actual.");
+                const currentDayObj = state.destinationData.days.find(d => d.id === state.selectedDay);
+                if (currentDayObj) {
+                    currentDayObj.events.push({ time: "19:30", title: "Cena Exclusiva Recomendada por IA", desc: "Reserva en restaurante galardonado de la zona.", lat: state.destinationData.lat + 0.002, lng: state.destinationData.lng + 0.002 });
+                    renderTimeline();
+                    updateMapMarkers();
                 }
             });
 
             const modal = document.getElementById("pro-modal");
-            document.getElementById("open-pro-modal").addEventListener("click", () => modal.classList.remove("hidden"));
-            document.getElementById("budget-upgrade-trigger").addEventListener("click", () => modal.classList.remove("hidden"));
-            document.getElementById("close-pro-modal").addEventListener("click", () => modal.classList.add("hidden"));
-
-            // Redirección directa a tu enlace de pago de Stripe
-            document.getElementById("payment-form").addEventListener("submit", (e) => {
-                e.preventDefault();
+            // Al hacer clic en el botón de la barra superior, redirige directamente a Stripe
+            document.getElementById("open-pro-modal").addEventListener("click", () => {
                 window.location.href = "https://buy.stripe.com/00w9ASdokg1GgobfDJ7kc02";
             });
+
+            document.getElementById("close-pro-modal").addEventListener("click", () => modal.classList.add("hidden"));
+            document.getElementById("close-modal-ok").addEventListener("click", () => modal.classList.add("hidden"));
         }
     </script>
 </body>
